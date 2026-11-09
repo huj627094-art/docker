@@ -18,4 +18,15 @@
     {% include "includes/booking_form.html" %}
   </div>
 </section>
+
+{% if booking_source %}
+{# DEVOPS: цель «Отправка формы бронирования» — только после успешного сохранения заявки #}
+{{ booking_source|json_script:"booking-source" }}
+<script>
+  window.addEventListener("load", function () {
+    var source = JSON.parse(document.getElementById("booking-source").textContent);
+    if (window.umami) umami.track("booking", { source: source });
+  });
+</script>
+{% endif %}
 {% endblock %}

@@ -140,6 +140,23 @@ DJANGO_DEBUG=0 python manage.py runserver --insecure
 
 ---
 
+## Запуск в Docker (сайт + аналитика + мониторинг)
+
+```bash
+cp .env.example .env      # заполните пароли и DJANGO_SECRET_KEY
+docker compose up -d --build
+```
+
+| Что | Адрес |
+|---|---|
+| Сайт | http://localhost |
+| Umami (аналитика) | http://localhost:3000 (`admin` / `umami`, сразу смените пароль) |
+| Grafana (мониторинг) | http://localhost:3001 (`admin` / пароль из `GRAFANA_ADMIN_PASSWORD`) |
+
+Тесты в контейнере: `docker compose run --rm web python manage.py test`
+
+---
+
 ## Структура проекта
 
 ```

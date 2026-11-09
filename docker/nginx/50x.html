@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Поезд задерживается — Подземка</title>
+  <style>
+    :root { --bg: #0d0d10; --text: #e9e6df; --muted: #8a8780; --neon: #ff3d6e; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center;
+           background: var(--bg); color: var(--text);
+           font-family: system-ui, -apple-system, "Segoe UI", sans-serif; padding: 24px; }
+    .board { max-width: 560px; text-align: center; }
+    .line { display: inline-block; font: 700 14px/1 ui-monospace, monospace; letter-spacing: .2em;
+            color: var(--neon); border: 2px solid var(--neon); border-radius: 999px;
+            padding: 8px 16px; box-shadow: 0 0 18px var(--neon); }
+    h1 { font-size: clamp(28px, 6vw, 44px); margin: 28px 0 12px; }
+    p { color: var(--muted); line-height: 1.6; margin: 0 0 12px; }
+    a { color: var(--text); }
+  </style>
+</head>
+<body>
+  <main class="board">
+    <span class="line">ТЕХНИЧЕСКИЙ ПЕРЕРЫВ</span>
+    <h1>Поезд задерживается</h1>
+    <p>Сайт «Подземки» ненадолго ушёл в депо. Обновите страницу через пару минут.</p>
+    <p>Забронировать зал можно по телефону <a href="tel:+79001234567">+7 (900) 123-45-67</a>.</p>
+  </main>
+</body>
+</html>

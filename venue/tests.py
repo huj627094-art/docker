@@ -12,11 +12,16 @@ import datetime
 import io
 from unittest import mock
 
+from django.conf import settings
 from django.core.management import call_command
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from .models import BookingRequest, Hall, Poster
+
+
+def aware_utc(*args):
+    return datetime.datetime(*args, tzinfo=datetime.timezone.utc)
 
 
 class SiteTestCase(TestCase):
@@ -46,6 +51,32 @@ class PagesTest(SiteTestCase):
         self.assertTrue(self.client.login(username="admin", password="podzemka2026"))
 
 
+class DevOpsTest(SiteTestCase):
+    def test_healthz(self):
+        response = self.client.get("/healthz/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"status": "ok"})
+
+    def test_metrics_available_for_prometheus(self):
+        self.client.get("/")
+        response = self.client.get("/metrics")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"django_http_requests_total_by_view_transport_method_total", response.content)
+
+    def test_booking_goal_once(self):
+        hall = Hall.objects.first()
+        data = {
+            "name": "Тест", "phone": "+7 (900) 000-00-00", "guests": 50, "hall": hall.pk,
+            "date": (datetime.date.today() + datetime.timedelta(days=30)).isoformat(),
+        }
+        response = self.client.post(
+            reverse("venue:booking"), data, follow=True, HTTP_REFERER="http://testserver/halls/x/",
+        )
+        self.assertEqual(response.context["booking_source"], "/halls/x/")
+        # Обновили страницу — цель повторно не отправляется
+        self.assertIsNone(self.client.get(reverse("venue:booking")).context["booking_source"])
+
+
 class BookingTest(SiteTestCase):
     def form_data(self, **overrides):
         data = {
@@ -73,11 +104,22 @@ class BookingTest(SiteTestCase):
 
 class PromoAndPosterTest(SiteTestCase):
     def test_promo_hidden_after_deadline(self):
-        with mock.patch("venue.context_processors.datetime") as dt:
-            dt.date.today.return_value = datetime.date(2099, 1, 1)
-            dt.date.fromisoformat = datetime.date.fromisoformat
+        # DEVOPS: дату теперь берём через timezone.localdate(), поэтому подменяем «сейчас»
+        with mock.patch("django.utils.timezone.now", return_value=aware_utc(2099, 1, 1, 12)):
             response = self.client.get(reverse("venue:home"))
         self.assertIsNone(response.context["promo"])
+
+    @override_settings(PROMO={**settings.PROMO, "until": "2026-10-01"})
+    def test_promo_deadline_by_chita_time(self):
+        # DEVOPS: 1 октября 20:00 UTC — это уже 2 октября 05:00 по Чите (UTC+9).
+        # Акция «до 1 октября включительно» должна быть скрыта, где бы ни стоял сервер.
+        with mock.patch("django.utils.timezone.now", return_value=aware_utc(2026, 10, 1, 20)):
+            response = self.client.get(reverse("venue:home"))
+        self.assertIsNone(response.context["promo"])
+        # А 1 октября 10:00 UTC (19:00 по Чите) — ещё показывается
+        with mock.patch("django.utils.timezone.now", return_value=aware_utc(2026, 10, 1, 10)):
+            response = self.client.get(reverse("venue:home"))
+        self.assertIsNotNone(response.context["promo"])
 
     def test_past_poster_not_listed_but_regular_is(self):
         past = Poster.objects.create(

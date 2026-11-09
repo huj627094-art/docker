@@ -1,0 +1,25 @@
+# Служебное
+.git
+.github
+.venv
+venv
+env
+__pycache__
+*.pyc
+.env
+.idea
+.vscode
+.claude
+
+# База и собранная статика: в контейнере свои
+db.sqlite3
+staticfiles
+media
+
+# Исходники фотографий из корня репозитория: на сайте они не используются,
+# все нужные картинки уже лежат в static/img/
+/*.jpg
+/*.jpeg
+/*.JPG
+/*.webp
+/*.png

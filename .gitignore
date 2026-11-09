@@ -16,3 +16,6 @@ media/
 *.code-workspace
 .idea/
 .claude/
+
+# Дампы томов Docker (создаёт pack.ps1) — только для переноса архивом, не для git
+data/

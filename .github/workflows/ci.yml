@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  # Основные тесты: страницы, бронь, акция, healthz, метрики. Должны быть зелёными всегда.
+  tests:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: podzemka
+          POSTGRES_USER: podzemka
+          POSTGRES_PASSWORD: podzemka
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U podzemka"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://podzemka:podzemka@localhost:5432/podzemka
+      DJANGO_SECRET_KEY: ci-only-not-secret
+      DJANGO_DEBUG: "0"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python manage.py check --deploy --fail-level ERROR
+      - run: python manage.py test venue.tests -v 2
+
+  # SEO-тесты. Пока SEO-задание не сделано — красные, но сборку не блокируют.
+  # Когда всё позеленеет, удалите continue-on-error и сделайте проверку обязательной.
+  seo:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    env:
+      DJANGO_SECRET_KEY: ci-only-not-secret
+      DJANGO_DEBUG: "0"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python manage.py test venue.tests_seo -v 2
+
+  # Образ собирается (в том числе collectstatic с хэшами) — иначе деплоить нечего.
+  docker:
+    runs-on: ubuntu-latest
+    needs: tests
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build --target web -t podzemka-web .
+      - run: docker build --target nginx -t podzemka-nginx .

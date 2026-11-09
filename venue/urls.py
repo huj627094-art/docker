@@ -26,4 +26,5 @@ urlpatterns = [
     path("gallery/", views.gallery, name="gallery"),
     path("contacts/", views.contacts, name="contacts"),
     path("booking/", views.booking, name="booking"),
+    path("healthz/", views.healthz, name="healthz"),  # DEVOPS: служебный, не для поисковиков
 ]

@@ -1,1 +1,6 @@
 Django>=5.2,<7
+gunicorn>=23,<24
+psycopg[binary]>=3.2,<4
+dj-database-url>=2.3,<4
+django-prometheus>=2.3,<3
+beautifulsoup4>=4.12,<5

@@ -1,2 +1,4 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+# DEVOPS: shell-скрипты всегда с LF, иначе на Windows-клоне контейнер не стартует
+*.sh text eol=lf

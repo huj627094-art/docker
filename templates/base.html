@@ -72,6 +72,10 @@
 
   {% include "includes/footer.html" %}
 
+  {% if umami_website_id %}
+  {# DEVOPS: аналитика Umami. Выводится, только если задан UMAMI_WEBSITE_ID. #}
+  <script defer src="{{ umami_script_url }}" data-website-id="{{ umami_website_id }}"></script>
+  {% endif %}
   <script src="{% static 'js/main.js' %}"></script>
   {% block extra_js %}{% endblock %}
 

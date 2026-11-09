@@ -6,7 +6,7 @@ class Hall(models.Model):
     """Зал (в стилистике сайта — «станция»)."""
 
     name = models.CharField("Название", max_length=100)
-
+    slug = models.SlugField("URL", max_length=120, unique=True, null=True, blank=True)
     # SEO-ЗАДАНИЕ (ЧПУ — человекопонятные URL):
     # Сейчас залы открываются по адресу /halls/1/, /halls/2/ ... — это плохо для SEO.
     # ПОДСКАЗКА: добавьте поле
@@ -55,8 +55,7 @@ class Hall(models.Model):
         return self.name
 
     def get_absolute_url(self):
-        # ПОДСКАЗКА: после добавления slug замените pk=self.pk на slug=self.slug
-        return reverse("venue:hall_detail", kwargs={"pk": self.pk})
+        return reverse("venue:hall_detail", kwargs={"slug": self.slug})
 
     def features_list(self):
         return [f.strip() for f in self.features.splitlines() if f.strip()]
@@ -174,6 +173,7 @@ class Poster(models.Model):
     """Событие в афише: квиз, концерт, вечеринка — с конкретной датой."""
 
     title = models.CharField("Название", max_length=150)
+    slug = models.SlugField("URL", max_length=120, unique=True, null=True, blank=True)
     topic = models.CharField("Тема", max_length=150, blank=True)
     organizer = models.CharField("Организатор", max_length=150, blank=True)
     date = models.DateField("Дата", help_text="Для регулярного события — дата первого проведения")
@@ -203,4 +203,4 @@ class Poster(models.Model):
         return f"{self.title} ({self.date:%d.%m.%Y})"
 
     def get_absolute_url(self):
-        return reverse("venue:poster_detail", kwargs={"pk": self.pk})
+        return reverse("venue:poster_detail", kwargs={"slug": self.slug})
